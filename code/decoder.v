@@ -148,10 +148,21 @@ always@(posedge clk) begin
 	else
 		instr_type <= 7'b1111111;
 
-	//TODO: Generating Immediate value
+	//Generating Immediate value
+	if (`IS_I_INSTR(inst))
+		imm <= { {21{inst[31]}}, inst[30:20]};
+	else if (`IS_S_INSTR(inst))
+		imm <= { {21{inst[31]}}, inst[30:25], inst[11:7] };
+	else if (`IS_B_INSTR(inst))
+		imm <= { {20{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0 };
+	else if (`IS_U_INSTR(inst))
+		imm <= { inst[31], inst[30:12], 12'b0 };
+	else if (`IS_J_INSTR(inst))
+		imm <= { {12{inst[31]}}, inst[19:12], inst[20], inst[30:21], 1'b0 };
+	else
+		imm <= 32'b0;
 	
+	$display("instr type %x imm %x rs1 %x rs2 %x rd %x valid %x%x%x", instr_type, imm, rs1, rs2, rd, rs1e, rs2e, rde);
 end //always end
-
-
 
 endmodule
