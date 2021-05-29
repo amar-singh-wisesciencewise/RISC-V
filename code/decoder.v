@@ -58,10 +58,11 @@
 module decoder(clk, reset, inst, instr_type, rde, rd, rs1e, rs2e,  rs1, rs2, imm);
 parameter WIDTH = 32;
 parameter REG_WIDTH = 5;
+parameter INSTR_TYPE_WIDTH = 8;
 
 input clk, reset;
 input [WIDTH-1 : 0] inst;
-output reg [8 : 0] instr_type; //instruction type
+output reg [INSTR_TYPE_WIDTH-1 : 0] instr_type; //instruction type
 output reg [WIDTH-1 : 0] imm; //immediate value if there
 
 output reg [REG_WIDTH-1 : 0] rs1; //source register 1
