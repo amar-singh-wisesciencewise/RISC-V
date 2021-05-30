@@ -65,8 +65,13 @@ wire [BUS_WIDTH-1 : 0] rs2_data; //rs2 data of RF
 reg [BUS_WIDTH-1 : 0] rs1_data_alu; //rs1 data of RF
 reg [BUS_WIDTH-1 : 0] rs2_data_alu; //rs2 data of RF
 
+wire [BUS_WIDTH-1 : 0] result_; //execute result
+reg [BUS_WIDTH-1 : 0] result; //execute result of execute
+wire is_taken; //is branch taken...TRUE if PC needs to be changed
+
 decoder dec1(.clk(clk), .reset(reset), .inst(inst), .instr_type(instr_type), .rs1(rs1), .rs2(rs2), .rd(rd), .rs1e(rs1e), .rs2e(rs2e), .rde(rde), .imm(imm));
 register_file_read rf_r1(.clk(clk), .reset(reset), .rs1e(rs1e_decoder), .rs2e(rs2e_decoder),  .rs1(rs1_decoder), .rs2(rs2_decoder), .rs1_data(rs1_data), .rs2_data(rs2_data));
+execute ex1(.clk(clk), .reset(reset), .instr_type(instr_type_rf), .pc(pc_execute), .rs1(rs1_data_alu), .rs2(rs2_data_alu), .imm(imm_rf), .result(result_), .is_taken(is_taken));
 
 // PC logic and fetch logic
 always@(posedge clk) begin
@@ -133,8 +138,34 @@ always@(posedge clk) begin
 		rs1_data_alu <= rs1_data;
 		rs2_data_alu <= rs2_data;
 	end //else
+end //always end
 
 
+//execute block
+always@(posedge clk) begin
+	if (reset) begin
+		pc_execute <= 0;
+		instr_type_execute <= 0;
+		rs1_execute <= 0;
+		rs2_execute <= 0;
+		rd_execute <= 0;
+		rs1e_execute <= 0;
+		rs2e_execute <= 0;
+		rde_execute <= 0;
+		imm_execute <= 0;
+	end else begin
+		pc_ls <= pc_execute; //propogate	
+		instr_type_execute <= instr_type_rf;
+		rs1_execute <= rs1_rf;
+		rs2_execute <= rs2_rf;
+		rd_execute <= rd_rf;
+		rs1e_execute <= rs1e_rf;
+		rs2e_execute <= rs2e_rf;
+		rde_execute <= rde_rf;
+		imm_execute <= imm_rf;
+
+		result <= result_;
+	end //else
 end //always end
 
 endmodule
