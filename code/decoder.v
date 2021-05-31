@@ -42,6 +42,7 @@
 `define IS_OR 33
 `define IS_AND 34 
 `define IS_LOAD 35
+`define IS_STORE 36
 
 `define IS_U_INSTR(x) ((x[6:2] == 5'b01101) || (x[6:2] == 5'b00101))
 `define IS_I_INSTR(x) ((x[6:2] == 5'b00001) || (x[6:2] == 5'b11001) || (x[6:2] == 5'b00000) || (x[6:2] == 5'b00100) || (x[6:2] == 5'b00110))
@@ -146,6 +147,8 @@ always@(posedge clk) begin
 		instr_type <= `IS_OR;
 	else if ((7'b0110011 == `OPCODE) && (3'b111 == `FUNCT3) &&(7'b0000000 == `FUNCT7))
 		instr_type <= `IS_AND;
+	else if (`IS_S_INSTR(inst))
+		instr_type <= `IS_STORE;
 	else
 		instr_type <= 7'b1111111;
 
