@@ -1,19 +1,21 @@
 `timescale 1ns / 1ps
 
-module riscv(clk, reset, iwr, iaddr, idata, wr, addr, data_in, data_out);
+module riscv(clk, reset, iwr, iaddr, idata, wr, addr, data_out, re, data_in);
 
-input clk, reset, iwr, wr;
+input clk, reset;
 
 parameter BUS_WIDTH = 32;
 parameter REG_WIDTH = 5;
 parameter INSTR_TYPE_WIDTH = 8;
 
-output reg [BUS_WIDTH-1 : 0] iaddr;
-output reg [BUS_WIDTH-1 : 0] addr;
-output reg [BUS_WIDTH-1 : 0] data_out;
+output [BUS_WIDTH-1 : 0] iaddr;
+output [BUS_WIDTH-1 : 0] addr;
+output [BUS_WIDTH-1 : 0] data_out;
 
 input [BUS_WIDTH-1 : 0] idata;
 input [BUS_WIDTH-1 : 0] data_in;
+output reg iwr = 1'b0;
+output reg wr /* store */, re /* load */;
 
 reg [BUS_WIDTH-1 : 0] pc;
 reg [BUS_WIDTH-1 : 0] pc_decoder;
@@ -64,14 +66,27 @@ wire [BUS_WIDTH-1 : 0] rs1_data; //rs1 data of RF
 wire [BUS_WIDTH-1 : 0] rs2_data; //rs2 data of RF
 reg [BUS_WIDTH-1 : 0] rs1_data_alu; //rs1 data of RF
 reg [BUS_WIDTH-1 : 0] rs2_data_alu; //rs2 data of RF
+reg [BUS_WIDTH-1 : 0] rs1_data_ls; //rs1 data of RF
+reg [BUS_WIDTH-1 : 0] rs2_data_ls; //rs2 data of RF
+reg [BUS_WIDTH-1 : 0] rs1_data_wb; //rs1 data of RF
+reg [BUS_WIDTH-1 : 0] rs2_data_wb; //rs2 data of RF
 
 wire [BUS_WIDTH-1 : 0] result_; //execute result
 reg [BUS_WIDTH-1 : 0] result; //execute result of execute
+reg [BUS_WIDTH-1 : 0] result_ls; //execute result of execute
+reg [BUS_WIDTH-1 : 0] result_wb; //execute result of execute
 wire is_taken; //is branch taken...TRUE if PC needs to be changed
 
+wire [BUS_WIDTH-1 : 0] rdata_; //for load store module
+
 decoder dec1(.clk(clk), .reset(reset), .inst(inst), .instr_type(instr_type), .rs1(rs1), .rs2(rs2), .rd(rd), .rs1e(rs1e), .rs2e(rs2e), .rde(rde), .imm(imm));
-register_file_read rf_r1(.clk(clk), .reset(reset), .rs1e(rs1e_decoder), .rs2e(rs2e_decoder),  .rs1(rs1_decoder), .rs2(rs2_decoder), .rs1_data(rs1_data), .rs2_data(rs2_data));
 execute ex1(.clk(clk), .reset(reset), .instr_type(instr_type_rf), .pc(pc_execute), .rs1(rs1_data_alu), .rs2(rs2_data_alu), .imm(imm_rf), .result(result_), .is_taken(is_taken));
+
+risc_v_rf rf1(.clk(clk), .reset(reset), .wr(rde_ls), .waddr(rd_ls), .wdata(result_wb), .re1(rs1e_decoder), .raddr1(rs1_decoder), .rdata1(rs1_data), .re2(rs2e_decoder), .raddr2(rs2_decoder), .rdata2(rs2_data));
+
+assign iaddr = (is_taken) ? result_ : pc; //instruction to be always fetched from PC address
+assign addr = result;
+assign data_out = rs2_data_ls; //store rs2
 
 // PC logic and fetch logic
 always@(posedge clk) begin
@@ -80,7 +95,7 @@ always@(posedge clk) begin
 	end else begin
 		pc <= pc + 1;
 		pc_decoder <= pc;
-		iaddr <= pc;
+//		iaddr <= pc;
 		inst <= idata;
 		$display("%x",inst);
 	end // else end
@@ -164,7 +179,52 @@ always@(posedge clk) begin
 		rde_execute <= rde_rf;
 		imm_execute <= imm_rf;
 
+		rs1_data_ls <= rs1_data_alu;
+		rs2_data_ls <= rs2_data_alu;
+
+		if (instr_type_rf == `IS_LOAD) begin
+			re <= 1'b1;
+			wr <= 1'b0;
+		end else if (instr_type_rf == `IS_STORE) begin
+			wr <= 1'b1;
+			re <= 1'b0;
+		end else begin
+			re <= 1'b0;
+			wr <= 1'b0;
+		end
+
 		result <= result_;
+		
+	end //else
+end //always end
+
+
+//load and store block
+always@(posedge clk) begin
+	if (reset) begin
+		pc_ls <= 0;
+		instr_type_ls <= 0;
+		rs1_ls <= 0;
+		rs2_ls <= 0;
+		rd_ls <= 0;
+		rs1e_ls <= 0;
+		rs2e_ls <= 0;
+		rde_ls <= 0;
+		imm_ls <= 0;
+	end else begin
+		pc_wb <= pc_ls; //propogate	
+		instr_type_ls <= instr_type_execute;
+		rs1_ls <= rs1_execute;
+		rs2_ls <= rs2_execute;
+		rd_ls <= rd_execute;
+		rs1e_ls <= rs1e_execute;
+		rs2e_ls <= rs2e_execute;
+		rde_ls <= rde_execute;
+		imm_ls <= imm_execute;
+
+		rs1_data_wb <= rs1_data_ls;
+		rs2_data_wb <= rs2_data_ls;
+		result_wb <= result;
 	end //else
 end //always end
 

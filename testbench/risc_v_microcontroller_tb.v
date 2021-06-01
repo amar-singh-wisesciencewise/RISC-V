@@ -8,10 +8,8 @@ reg clk = 0;
 reg reset = 0;
 
 initial begin
-#20 reset = 1;
-#20 reset = 0;
-#20 reset = 1;
-#20 reset = 0;
+#0  reset = 1;
+#10 reset = 0;
 #100 $finish;
 end //intial end
 

@@ -19,56 +19,128 @@ always@(posedge clk) begin
 	if(reset) begin
 		result <= 0;
 	end else begin
-
+	
 	case(instr_type)
 	`IS_ADDI :
+		begin
 		result <= rs1 + imm;
+		is_taken <= 0;
+		end
 	`IS_ADD :
+		begin
 		result <= rs1 + rs2;
+		is_taken <= 0;
+		end
 	`IS_ANDI :
+		begin
 		result <= rs1 & imm;
+		is_taken <= 0;
+		end
 	`IS_ORI :
+		begin
 		result <= rs1 | imm;
+		is_taken <= 0;
+		end
 	`IS_XORI :
+		begin
 		result <= rs1 ^ imm;
+		is_taken <= 0;
+		end
 	`IS_SLLI :
+		begin
 		result <= rs1 << imm[5:0];
+		is_taken <= 0;
+		end
 	`IS_SRLI :
+		begin
 		result <= rs1 >> imm[5:0];
+		is_taken <= 0;
+		end
 	`IS_AND :
+		begin
 		result <= rs1 & rs2;
+		is_taken <= 0;
+		end
 	`IS_OR :
+		begin
 		result <= rs1 | rs2;
+		is_taken <= 0;
+		end
 	`IS_XOR :
+		begin
 		result <= rs1 ^ rs2;
+		is_taken <= 0;
+		end
 	`IS_SUB :
+		begin
 		result <= rs1 - rs2;
+		is_taken <= 0;
+		end
 	`IS_SLL :
+		begin
 		result <= rs1 << rs2[4:0];
+		is_taken <= 0;
+		end
 	`IS_SRL :
+		begin
 		result <= rs1 >> rs2[4:0];
+		is_taken <= 0;
+		end
 	`IS_SLTU :
+		begin
 		result <=  {31'b0, (rs1 < rs2)};
+		is_taken <= 0;
+		end
 	`IS_SLTIU :
+		begin
 		result <= {31'b0, (rs1 < imm)};
+		is_taken <= 0;
+		end
 	`IS_LUI :
+		begin
 		result <= { imm[31:12], 12'b0 };
+		is_taken <= 0;
+		end
 	`IS_AUIPC :
+		begin
 		result <= pc + imm;
+		is_taken <= 0;
+		end
 	`IS_JAL :
+		begin
 		result <= pc + imm;
+		is_taken <= 0;
+		end
 	`IS_JALR :
+		begin
 		result <= rs1 + imm;
+		is_taken <= 0;
+		end
 	`IS_SLT :
+		begin
 		result <= (rs1[31] == rs2[31]) ? ({31'b0, (rs1 < rs2)}) : ({31'b0, rs1[31]});
+		is_taken <= 0;
+		end
 	`IS_SLTI :
+		begin
 		result <= (rs1[31] == imm[31]) ? ({31'b0, (rs1 < imm)}) : ({31'b0, imm[31]});
+		is_taken <= 0;
+		end
 	`IS_SRA  :
+		begin
 		result <= rs1 >>> rs2[4:0]; //right shift with sign extention
+		is_taken <= 0;
+		end
 	`IS_SRAI :
+		begin
 		result <= rs1 >>> imm[4:0];
+		is_taken <= 0;
+		end
 	`IS_LOAD :
+		begin
 		result <= rs1  + imm;
+		is_taken <= 0;
+		end
 	`IS_BEQ :
 		begin
 		result <= rs1 + imm;
@@ -100,7 +172,10 @@ always@(posedge clk) begin
 		is_taken <= (rs1 >= rs2) ? 1'b1 : 1'b0;
 		end
 	default :
+		begin
 		result <= 0;
+		is_taken <= 0;
+		end
 
 	endcase
 	end //else end
