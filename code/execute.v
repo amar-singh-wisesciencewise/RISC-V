@@ -1,11 +1,11 @@
 `timescale 1ns/1ps
 
-module execute(clk, reset, instr_type, pc, rs1, rs2, imm, result, is_taken);
+module execute(reset, instr_type, pc, rs1, rs2, imm, result, is_taken);
 parameter WIDTH = 32;
 parameter REG_WIDTH = 5;
 parameter INSTR_TYPE_WIDTH = 8;
 
-input clk, reset;
+input reset;
 input [INSTR_TYPE_WIDTH-1 : 0] instr_type; //instruction type
 input [WIDTH-1 : 0] imm; //immediate value if there
 input [WIDTH-1 : 0] rs1; //rs1 value
@@ -15,7 +15,7 @@ input [WIDTH-1 : 0] pc; // program counter
 output reg [WIDTH-1 : 0] result; //output of ALU
 output reg is_taken;
 
-always@(posedge clk) begin
+always@(*) begin
 	if(reset) begin
 		result <= 0;
 	end else begin
@@ -109,12 +109,12 @@ always@(posedge clk) begin
 	`IS_JAL :
 		begin
 		result <= pc + imm;
-		is_taken <= 0;
+		is_taken <= 1;
 		end
 	`IS_JALR :
 		begin
 		result <= rs1 + imm;
-		is_taken <= 0;
+		is_taken <= 1;
 		end
 	`IS_SLT :
 		begin

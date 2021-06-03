@@ -5,9 +5,9 @@
 
 // this memory is degined for data read and write -  to be used by load and store instruction
 // WR is set for write and 0 for read
-module data_mem(reset, clk, addr, re, rdata, wr, wdata);
+module data_mem(reset, addr, re, rdata, wr, wdata);
 
-input reset, clk, wr, re;
+input reset, wr, re;
 
 parameter WIDTH1 = 32;
 parameter MEM_SIZE = 1024;
@@ -29,7 +29,7 @@ always@(posedge reset) begin
 	end //if end
 end //always
 
-always@(posedge clk) begin
+always@(*) begin
 	if (wr)
 		dmem[addr] <= wdata;
 	else if (re)

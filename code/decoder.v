@@ -13,12 +13,12 @@
 `define FUNCT7 (inst[31:25])
 `define OPCODE (inst[6:0])
 
-module decoder(clk, reset, inst, instr_type, rde, rd, rs1e, rs2e,  rs1, rs2, imm);
+module decoder(reset, inst, instr_type, rde, rd, rs1e, rs2e,  rs1, rs2, imm);
 parameter WIDTH = 32;
 parameter REG_WIDTH = 5;
 parameter INSTR_TYPE_WIDTH = 8;
 
-input clk, reset;
+input reset;
 input [WIDTH-1 : 0] inst;
 output reg [INSTR_TYPE_WIDTH-1 : 0] instr_type; //instruction type
 output reg [WIDTH-1 : 0] imm; //immediate value if there
@@ -30,7 +30,7 @@ output reg rde; //destination write is valid
 output reg rs1e; //source rs1 is valid
 output reg rs2e; //source rs2 is valid
 
-always@(posedge clk) begin
+always@(*) begin
 	rs1 <= inst[19:15];
 	rs2 <= inst[24:20];
 	rd  <= inst[11:7];
@@ -123,7 +123,6 @@ always@(posedge clk) begin
 	else
 		imm <= 32'b0;
 	
-	$display("instr type %x imm %x rs1 %x rs2 %x rd %x valid %x%x%x", instr_type, imm, rs1, rs2, rd, rs1e, rs2e, rde);
 end //always end
 
 endmodule

@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
 
-module risc_v_rf(clk, reset, wr, waddr, wdata, re1, raddr1, rdata1, re2, raddr2, rdata2);
+module risc_v_rf(reset, wr, waddr, wdata, re1, raddr1, rdata1, re2, raddr2, rdata2);
 
-input clk, reset, wr, re1, re2;
+input reset, wr, re1, re2;
 
 parameter WIDTH1 = 32;
 parameter WIDTH2 = 5;
@@ -20,7 +20,7 @@ reg [WIDTH1 - 1 : 0] RegFile [0 : (1 << WIDTH2) - 1];
 integer i;
 
 // for data update and reset
-always@(posedge clk) begin
+always@(*) begin
   if (reset) begin
 	for (i = 0; i < (1 << WIDTH2); i++ ) begin
 		RegFile[i] <= 0; 
@@ -33,7 +33,7 @@ always@(posedge clk) begin
 end //always end
 
 
-always@(posedge clk) begin
+always@(*) begin
     if (re1 && (wr && (waddr == raddr1)))
 	rdata1 <= wdata;
     else if (~re1)
@@ -42,7 +42,7 @@ always@(posedge clk) begin
 	rdata1 <= RegFile[raddr1];
 end //always end
 
-always@(posedge clk) begin
+always@(*) begin
     if (re2 && (wr && (waddr == raddr2)))
 	rdata2 <= wdata;
     else if (~re2)

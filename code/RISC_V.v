@@ -73,33 +73,42 @@ reg [BUS_WIDTH-1 : 0] rs2_data_wb; //rs2 data of RF
 
 wire [BUS_WIDTH-1 : 0] result_; //execute result
 reg [BUS_WIDTH-1 : 0] result; //execute result of execute
-reg [BUS_WIDTH-1 : 0] result_ls; //execute result of execute
-reg [BUS_WIDTH-1 : 0] result_wb; //execute result of execute
+reg [BUS_WIDTH-1 : 0] result_ls; //execute result of ls
+reg [BUS_WIDTH-1 : 0] result_wb; //execute result of wb
 wire is_taken; //is branch taken...TRUE if PC needs to be changed
+reg is_taken_execute;
+reg is_taken_ls;
+reg is_taken_wb;
 
 wire [BUS_WIDTH-1 : 0] rdata_; //for load store module
 
-decoder dec1(.clk(clk), .reset(reset), .inst(inst), .instr_type(instr_type), .rs1(rs1), .rs2(rs2), .rd(rd), .rs1e(rs1e), .rs2e(rs2e), .rde(rde), .imm(imm));
-execute ex1(.clk(clk), .reset(reset), .instr_type(instr_type_rf), .pc(pc_execute), .rs1(rs1_data_alu), .rs2(rs2_data_alu), .imm(imm_rf), .result(result_), .is_taken(is_taken));
+decoder dec1(.reset(reset), .inst(inst), .instr_type(instr_type), .rs1(rs1), .rs2(rs2), .rd(rd), .rs1e(rs1e), .rs2e(rs2e), .rde(rde), .imm(imm));
+execute ex1(.reset(reset), .instr_type(instr_type_rf), .pc(pc_execute), .rs1(rs1_data_alu), .rs2(rs2_data_alu), .imm(imm_rf), .result(result_), .is_taken(is_taken));
 
-risc_v_rf rf1(.clk(clk), .reset(reset), .wr(rde_ls), .waddr(rd_ls), .wdata(result_wb), .re1(rs1e_decoder), .raddr1(rs1_decoder), .rdata1(rs1_data), .re2(rs2e_decoder), .raddr2(rs2_decoder), .rdata2(rs2_data));
-
-assign iaddr = (is_taken) ? result_ : pc; //instruction to be always fetched from PC address
+risc_v_rf rf1(.reset(reset), .wr(rde_ls), .waddr(rd_ls), .wdata(result_wb), .re1(rs1e_decoder), .raddr1(rs1_decoder), .rdata1(rs1_data), .re2(rs2e_decoder), .raddr2(rs2_decoder), .rdata2(rs2_data));
+assign iaddr = pc; //instruction to be always fetched from PC address
 assign addr = result;
 assign data_out = rs2_data_ls; //store rs2
 
-// PC logic and fetch logic
+// PC logic
 always@(posedge clk) begin
 	if (reset) begin
 		pc <= 0;
 	end else begin
-		pc <= pc + 1;
-		pc_decoder <= pc;
-//		iaddr <= pc;
-		inst <= idata;
-		$display("%x",inst);
+	//if branch change the PC
+		if (is_taken)
+			pc <= result_;
+		else
+			pc <= pc + 1;
 	end // else end
 end //always
+
+//fetch block
+always@(posedge clk) begin
+	pc_decoder <= pc;
+	inst <= idata;
+	$display("%x",inst);
+end //always end
 
 //decode block
 always@(posedge clk) begin
@@ -123,6 +132,7 @@ always@(posedge clk) begin
 		rs2e_decoder <= rs2e;
 		rde_decoder <= rde;
 		imm_decoder <= imm;
+	$display("instr type %x imm %x rs1 %x rs2 %x rd %x valid %x%x%x", instr_type, imm, rs1, rs2, rd, rs1e, rs2e, rde);
 	end //else
 end //always 
 
@@ -138,6 +148,8 @@ always@(posedge clk) begin
 		rs2e_rf <= 0;
 		rde_rf <= 0;
 		imm_rf <= 0;
+		rs1_data_alu <= 0;
+		rs2_data_alu <= 0;
 	end else begin
 		pc_execute <= pc_rf; //propogate	
 		instr_type_rf <= instr_type_decoder;
@@ -168,6 +180,12 @@ always@(posedge clk) begin
 		rs2e_execute <= 0;
 		rde_execute <= 0;
 		imm_execute <= 0;
+		rs1_data_ls <= 0;
+		rs2_data_ls <= 0;
+		result <= 0;
+		is_taken_execute <= 0;
+		re <= 1'b0;
+		wr <= 1'b0;
 	end else begin
 		pc_ls <= pc_execute; //propogate	
 		instr_type_execute <= instr_type_rf;
@@ -194,6 +212,8 @@ always@(posedge clk) begin
 		end
 
 		result <= result_;
+		is_taken_execute <= is_taken;
+		$display("result %h",result);
 		
 	end //else
 end //always end
@@ -211,6 +231,10 @@ always@(posedge clk) begin
 		rs2e_ls <= 0;
 		rde_ls <= 0;
 		imm_ls <= 0;
+		rs1_data_wb <= 0;
+		rs2_data_wb <= 0;
+		is_taken_wb <= 0;
+		result_wb <= 0;
 	end else begin
 		pc_wb <= pc_ls; //propogate	
 		instr_type_ls <= instr_type_execute;
@@ -224,6 +248,7 @@ always@(posedge clk) begin
 
 		rs1_data_wb <= rs1_data_ls;
 		rs2_data_wb <= rs2_data_ls;
+		is_taken_wb <= is_taken_execute;
 		result_wb <= result;
 	end //else
 end //always end

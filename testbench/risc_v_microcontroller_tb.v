@@ -10,7 +10,7 @@ reg reset = 0;
 initial begin
 #0  reset = 1;
 #10 reset = 0;
-#100 $finish;
+#500 $finish;
 end //intial end
 
 
