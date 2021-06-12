@@ -107,7 +107,7 @@ end //always
 always@(posedge clk) begin
 	pc_decoder <= pc;
 	inst <= idata;
-	$display("%x",inst);
+//	$display("%x",inst);
 end //always end
 
 //decode block
@@ -132,7 +132,7 @@ always@(posedge clk) begin
 		rs2e_decoder <= rs2e;
 		rde_decoder <= rde;
 		imm_decoder <= imm;
-	$display("instr type %x imm %x rs1 %x rs2 %x rd %x valid %x%x%x", instr_type, imm, rs1, rs2, rd, rs1e, rs2e, rde);
+//	$display("instr type %x imm %x rs1 %x rs2 %x rd %x valid %x%x%x", instr_type, imm, rs1, rs2, rd, rs1e, rs2e, rde);
 	end //else
 end //always 
 
@@ -213,7 +213,7 @@ always@(posedge clk) begin
 
 		result <= result_;
 		is_taken_execute <= is_taken;
-		$display("result %h",result);
+//		$display("result %h",result);
 		
 	end //else
 end //always end

@@ -18,5 +18,17 @@ always #5 clk = !clk;
 
 risc_v_microcontroller uc1 (.clk(clk), .reset(reset));
 
+integer i = 0;
+initial begin
+	#300
+	for (i=0; i<32; i++)
+	begin
+		$display("%d %x",i, uc1.riscv1.rf1.RegFile[i]);
+	end
+end //initial end
 
+/*
+initial
+	$monitor($time, "  %x ", uc1.riscv1.rf1.RegFile[2]);
+*/
 endmodule
