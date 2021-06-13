@@ -27,6 +27,11 @@ initial begin
 	end
 end //initial end
 
+initial begin
+	$dumpfile("test.vcd");
+	$dumpvars(0, test);
+end
+
 /*
 initial
 	$monitor($time, "  %x ", uc1.riscv1.rf1.RegFile[2]);
