@@ -143,32 +143,32 @@ always@(*) begin
 		end
 	`IS_BEQ :
 		begin
-		result <= rs1 + imm;
+		result <= pc + imm;
 		is_taken <= (rs1 == rs2) ? 1'b1 : 1'b0;
 		end
 	`IS_BNE :
 		begin
-		result <= rs1 + imm;
+		result <= pc + imm;
 		is_taken <= (rs1 != rs2) ? 1'b1 : 1'b0;
 		end
 	`IS_BLT :
 		begin
-		result <= rs1 + imm;
+		result <= pc + imm;
 		is_taken <= ((rs1 < rs2) ^ (rs1[31] != rs2[31])) ? 1'b1 : 1'b0;
 		end
 	`IS_BGE :
 		begin
-		result <= rs1 + imm;
+		result <= pc + imm;
 		is_taken <= ((rs1 >= rs2) ^ (rs1[31] != rs2[31])) ? 1'b1 : 1'b0;
 		end
 	`IS_BLTU :
 		begin
-		result <= rs1 + imm;
+		result <= pc + imm;
 		is_taken <= (rs1 < rs2) ? 1'b1 : 1'b0;
 		end
 	`IS_BGEU :
 		begin
-		result <= rs1 + imm;
+		result <= pc + imm;
 		is_taken <= (rs1 >= rs2) ? 1'b1 : 1'b0;
 		end
 	default :

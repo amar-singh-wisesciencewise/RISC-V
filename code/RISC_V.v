@@ -18,6 +18,7 @@ output reg iwr = 1'b0;
 output reg wr /* store */, re /* load */;
 
 reg [BUS_WIDTH-1 : 0] pc;
+reg [BUS_WIDTH-1 : 0] pc_fetch;
 reg [BUS_WIDTH-1 : 0] pc_decoder;
 reg [BUS_WIDTH-1 : 0] pc_rf; //pc for register file
 reg [BUS_WIDTH-1 : 0] pc_execute;
@@ -83,7 +84,7 @@ reg is_taken_wb;
 wire [BUS_WIDTH-1 : 0] rdata_; //for load store module
 
 decoder dec1(.reset(reset), .inst(inst), .instr_type(instr_type), .rs1(rs1), .rs2(rs2), .rd(rd), .rs1e(rs1e), .rs2e(rs2e), .rde(rde), .imm(imm));
-execute ex1(.reset(reset), .instr_type(instr_type_rf), .pc(pc_execute), .rs1(rs1_data_alu), .rs2(rs2_data_alu), .imm(imm_rf), .result(result_), .is_taken(is_taken));
+execute ex1(.reset(reset), .instr_type(instr_type_rf), .pc(pc_rf), .rs1(rs1_data_alu), .rs2(rs2_data_alu), .imm(imm_rf), .result(result_), .is_taken(is_taken));
 
 risc_v_rf rf1(.reset(reset), .wr(rde_ls), .waddr(rd_ls), .wdata(result_wb), .re1(rs1e_decoder), .raddr1(rs1_decoder), .rdata1(rs1_data), .re2(rs2e_decoder), .raddr2(rs2_decoder), .rdata2(rs2_data));
 assign iaddr = pc; //instruction to be always fetched from PC address
@@ -99,13 +100,13 @@ always@(posedge clk) begin
 		if (is_taken)
 			pc <= result_;
 		else
-			pc <= pc + 1;
+			pc <= pc + 4;
 	end // else end
 end //always
 
 //fetch block
 always@(posedge clk) begin
-	pc_decoder <= pc;
+	pc_fetch <= pc;
 	inst <= idata;
 //	$display("%x",inst);
 end //always end
@@ -123,7 +124,7 @@ always@(posedge clk) begin
 		rde_decoder <= 0;
 		imm_decoder <= 0;
 	end else begin
-		pc_rf <= pc_decoder; //propogate	
+		pc_decoder <= pc_fetch; //propogate	
 		instr_type_decoder <= instr_type;
 		rs1_decoder <= rs1;
 		rs2_decoder <= rs2;
@@ -151,7 +152,7 @@ always@(posedge clk) begin
 		rs1_data_alu <= 0;
 		rs2_data_alu <= 0;
 	end else begin
-		pc_execute <= pc_rf; //propogate	
+		pc_rf <= pc_decoder; //propogate	
 		instr_type_rf <= instr_type_decoder;
 		rs1_rf <= rs1_decoder;
 		rs2_rf <= rs2_decoder;
@@ -187,7 +188,7 @@ always@(posedge clk) begin
 		re <= 1'b0;
 		wr <= 1'b0;
 	end else begin
-		pc_ls <= pc_execute; //propogate	
+		pc_execute <= pc_rf; //propogate	
 		instr_type_execute <= instr_type_rf;
 		rs1_execute <= rs1_rf;
 		rs2_execute <= rs2_rf;
@@ -236,7 +237,7 @@ always@(posedge clk) begin
 		is_taken_wb <= 0;
 		result_wb <= 0;
 	end else begin
-		pc_wb <= pc_ls; //propogate	
+		pc_ls <= pc_execute; //propogate	
 		instr_type_ls <= instr_type_execute;
 		rs1_ls <= rs1_execute;
 		rs2_ls <= rs2_execute;

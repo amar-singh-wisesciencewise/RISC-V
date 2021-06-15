@@ -10,7 +10,7 @@ reg reset = 0;
 initial begin
 #0  reset = 1;
 #10 reset = 0;
-#500 $finish;
+#1500 $finish;
 end //intial end
 
 
@@ -20,7 +20,7 @@ risc_v_microcontroller uc1 (.clk(clk), .reset(reset));
 
 integer i = 0;
 initial begin
-	#300
+	#1400
 	for (i=0; i<32; i++)
 	begin
 		$display("%d %x",i, uc1.riscv1.rf1.RegFile[i]);

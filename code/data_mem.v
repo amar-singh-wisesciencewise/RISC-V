@@ -31,9 +31,9 @@ end //always
 
 always@(*) begin
 	if (wr)
-		dmem[addr] <= wdata;
+		dmem[addr >> 2] <= wdata;
 	else if (re)
-		rdata <= dmem[addr];
+		rdata <= dmem[addr >> 2];
 	else
 		rdata <= 0;
 end //always
