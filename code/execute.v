@@ -141,6 +141,11 @@ always@(*) begin
 		result <= rs1  + imm;
 		is_taken <= 0;
 		end
+	`IS_STORE :
+		begin
+		result <= rs1  + imm;
+		is_taken <= 0;
+		end
 	`IS_BEQ :
 		begin
 		result <= pc + imm;

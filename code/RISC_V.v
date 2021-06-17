@@ -58,38 +58,34 @@ reg rde_rf, rs1e_rf, rs2e_rf;
 reg rde_execute, rs1e_execute, rs2e_execute;
 reg rde_ls, rs1e_ls, rs2e_ls;
 reg rde_wb, rs1e_wb, rs2e_wb;
-wire [BUS_WIDTH-1 : 0] imm; //immediate
+wire [BUS_WIDTH-1 : 0] imm; //immediate of decoder
 wire rde, rs1e, rs2e;
 wire [REG_WIDTH-1 : 0] rs1, rs2, rd;
 wire [INSTR_TYPE_WIDTH-1 : 0] instr_type;
 
 wire [BUS_WIDTH-1 : 0] rs1_data; //rs1 data of RF
 wire [BUS_WIDTH-1 : 0] rs2_data; //rs2 data of RF
-reg [BUS_WIDTH-1 : 0] rs1_data_alu; //rs1 data of RF
-reg [BUS_WIDTH-1 : 0] rs2_data_alu; //rs2 data of RF
-reg [BUS_WIDTH-1 : 0] rs1_data_ls; //rs1 data of RF
-reg [BUS_WIDTH-1 : 0] rs2_data_ls; //rs2 data of RF
-reg [BUS_WIDTH-1 : 0] rs1_data_wb; //rs1 data of RF
-reg [BUS_WIDTH-1 : 0] rs2_data_wb; //rs2 data of RF
+reg [BUS_WIDTH-1 : 0] rs1_data_rf; //rs1 data of RF
+reg [BUS_WIDTH-1 : 0] rs2_data_rf; //rs2 data of RF
+reg [BUS_WIDTH-1 : 0] rs1_data_execute; //rs1 data of execute
+reg [BUS_WIDTH-1 : 0] rs2_data_execute; //rs2 data of execute
 
-wire [BUS_WIDTH-1 : 0] result_; //execute result
-reg [BUS_WIDTH-1 : 0] result; //execute result of execute
+wire [BUS_WIDTH-1 : 0] result; //execute result
+reg [BUS_WIDTH-1 : 0] result_execute; //execute result of execute
 reg [BUS_WIDTH-1 : 0] result_ls; //execute result of ls
-reg [BUS_WIDTH-1 : 0] result_wb; //execute result of wb
 wire is_taken; //is branch taken...TRUE if PC needs to be changed
 reg is_taken_execute;
 reg is_taken_ls;
-reg is_taken_wb;
 
 wire [BUS_WIDTH-1 : 0] rdata_; //for load store module
 
 decoder dec1(.reset(reset), .inst(inst), .instr_type(instr_type), .rs1(rs1), .rs2(rs2), .rd(rd), .rs1e(rs1e), .rs2e(rs2e), .rde(rde), .imm(imm));
-execute ex1(.reset(reset), .instr_type(instr_type_rf), .pc(pc_rf), .rs1(rs1_data_alu), .rs2(rs2_data_alu), .imm(imm_rf), .result(result_), .is_taken(is_taken));
+execute ex1(.reset(reset), .instr_type(instr_type_rf), .pc(pc_rf), .rs1(rs1_data_rf), .rs2(rs2_data_rf), .imm(imm_rf), .result(result), .is_taken(is_taken));
 
-risc_v_rf rf1(.reset(reset), .wr(rde_ls), .waddr(rd_ls), .wdata(result_wb), .re1(rs1e_decoder), .raddr1(rs1_decoder), .rdata1(rs1_data), .re2(rs2e_decoder), .raddr2(rs2_decoder), .rdata2(rs2_data));
+risc_v_rf rf1(.reset(reset), .wr(rde_ls), .waddr(rd_ls), .wdata(result_ls), .re1(rs1e_decoder), .raddr1(rs1_decoder), .rdata1(rs1_data), .re2(rs2e_decoder), .raddr2(rs2_decoder), .rdata2(rs2_data));
 assign iaddr = pc; //instruction to be always fetched from PC address
-assign addr = result;
-assign data_out = rs2_data_ls; //store rs2
+assign addr = result_execute;
+assign data_out = rs2_data_execute; //store rs2
 
 // PC logic
 always@(posedge clk) begin
@@ -98,7 +94,7 @@ always@(posedge clk) begin
 	end else begin
 	//if branch change the PC
 		if (is_taken)
-			pc <= result_;
+			pc <= result;
 		else
 			pc <= pc + 4;
 	end // else end
@@ -149,8 +145,8 @@ always@(posedge clk) begin
 		rs2e_rf <= 0;
 		rde_rf <= 0;
 		imm_rf <= 0;
-		rs1_data_alu <= 0;
-		rs2_data_alu <= 0;
+		rs1_data_rf <= 0;
+		rs2_data_rf <= 0;
 	end else begin
 		pc_rf <= pc_decoder; //propogate	
 		instr_type_rf <= instr_type_decoder;
@@ -163,8 +159,8 @@ always@(posedge clk) begin
 		imm_rf <= imm_decoder;
 
 		//use decoder values for register file read
-		rs1_data_alu <= rs1_data;
-		rs2_data_alu <= rs2_data;
+		rs1_data_rf <= rs1_data;
+		rs2_data_rf <= rs2_data;
 	end //else
 end //always end
 
@@ -181,9 +177,9 @@ always@(posedge clk) begin
 		rs2e_execute <= 0;
 		rde_execute <= 0;
 		imm_execute <= 0;
-		rs1_data_ls <= 0;
-		rs2_data_ls <= 0;
-		result <= 0;
+		rs1_data_execute <= 0;
+		rs2_data_execute <= 0;
+		result_execute <= 0;
 		is_taken_execute <= 0;
 		re <= 1'b0;
 		wr <= 1'b0;
@@ -198,8 +194,8 @@ always@(posedge clk) begin
 		rde_execute <= rde_rf;
 		imm_execute <= imm_rf;
 
-		rs1_data_ls <= rs1_data_alu;
-		rs2_data_ls <= rs2_data_alu;
+		rs1_data_execute <= rs1_data_rf;
+		rs2_data_execute <= rs2_data_rf;
 
 		if (instr_type_rf == `IS_LOAD) begin
 			re <= 1'b1;
@@ -212,9 +208,9 @@ always@(posedge clk) begin
 			wr <= 1'b0;
 		end
 
-		result <= result_;
+		result_execute <= result;
 		is_taken_execute <= is_taken;
-//		$display("result %h",result);
+//		$display("result %h",result_execute);
 		
 	end //else
 end //always end
@@ -232,10 +228,7 @@ always@(posedge clk) begin
 		rs2e_ls <= 0;
 		rde_ls <= 0;
 		imm_ls <= 0;
-		rs1_data_wb <= 0;
-		rs2_data_wb <= 0;
-		is_taken_wb <= 0;
-		result_wb <= 0;
+		result_ls <= 0;
 	end else begin
 		pc_ls <= pc_execute; //propogate	
 		instr_type_ls <= instr_type_execute;
@@ -247,10 +240,10 @@ always@(posedge clk) begin
 		rde_ls <= rde_execute;
 		imm_ls <= imm_execute;
 
-		rs1_data_wb <= rs1_data_ls;
-		rs2_data_wb <= rs2_data_ls;
-		is_taken_wb <= is_taken_execute;
-		result_wb <= result;
+		if (instr_type_execute == `IS_LOAD)
+			result_ls <= data_in;
+		else
+			result_ls <= result_execute;
 	end //else
 end //always end
 
