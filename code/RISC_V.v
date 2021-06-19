@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
 
+`define NOP_INSTR {7'b0000000, 5'd0, 5'd0, 3'b000, 5'd0, 7'b0110011}
+
 module riscv(clk, reset, iwr, iaddr, idata, wr, addr, data_out, re, data_in);
 
 input clk, reset;
@@ -103,7 +105,10 @@ end //always
 //fetch block
 always@(posedge clk) begin
 	pc_fetch <= pc;
-	inst <= idata;
+	if (is_taken)
+		inst <= `NOP_INSTR;
+	else
+		inst <= idata;
 //	$display("%x",inst);
 end //always end
 
@@ -121,14 +126,14 @@ always@(posedge clk) begin
 		imm_decoder <= 0;
 	end else begin
 		pc_decoder <= pc_fetch; //propogate	
-		instr_type_decoder <= instr_type;
-		rs1_decoder <= rs1;
-		rs2_decoder <= rs2;
-		rd_decoder <= rd;
-		rs1e_decoder <= rs1e;
-		rs2e_decoder <= rs2e;
-		rde_decoder <= rde;
-		imm_decoder <= imm;
+		instr_type_decoder <= (is_taken) ? `IS_ADD : instr_type;
+		rs1_decoder <= (is_taken) ? 0 : rs1;
+		rs2_decoder <= (is_taken) ? 0 : rs2;
+		rd_decoder <= (is_taken) ? 0 : rd;
+		rs1e_decoder <= (is_taken) ? 1 : rs1e;
+		rs2e_decoder <= (is_taken) ? 1 : rs2e;
+		rde_decoder <= (is_taken) ? 1 : rde;
+		imm_decoder <= (is_taken) ? 0 : imm;
 //	$display("instr type %x imm %x rs1 %x rs2 %x rd %x valid %x%x%x", instr_type, imm, rs1, rs2, rd, rs1e, rs2e, rde);
 	end //else
 end //always 
@@ -149,18 +154,18 @@ always@(posedge clk) begin
 		rs2_data_rf <= 0;
 	end else begin
 		pc_rf <= pc_decoder; //propogate	
-		instr_type_rf <= instr_type_decoder;
-		rs1_rf <= rs1_decoder;
-		rs2_rf <= rs2_decoder;
-		rd_rf <= rd_decoder;
-		rs1e_rf <= rs1e_decoder;
-		rs2e_rf <= rs2e_decoder;
-		rde_rf <= rde_decoder;
-		imm_rf <= imm_decoder;
+		instr_type_rf <= (is_taken) ? `IS_ADD : instr_type_decoder;
+		rs1_rf <= (is_taken) ? 0 : rs1_decoder;
+		rs2_rf <= (is_taken) ? 0 : rs2_decoder;
+		rd_rf <= (is_taken) ? 0 : rd_decoder;
+		rs1e_rf <= (is_taken) ? 1 : rs1e_decoder;
+		rs2e_rf <= (is_taken) ? 1 : rs2e_decoder;
+		rde_rf <= (is_taken) ? 1 : rde_decoder;
+		imm_rf <= (is_taken) ? 0 : imm_decoder;
 
 		//use decoder values for register file read
-		rs1_data_rf <= rs1_data;
-		rs2_data_rf <= rs2_data;
+		rs1_data_rf <= (is_taken) ? 0 : rs1_data;
+		rs2_data_rf <= (is_taken) ? 0 : rs2_data;
 	end //else
 end //always end
 

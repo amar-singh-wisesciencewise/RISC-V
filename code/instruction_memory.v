@@ -22,7 +22,7 @@ reg [WIDTH1-1: 0]imem [MEM_SIZE-1 : 0];
 integer i = 0;
 
 initial begin
-
+/*
 imem[0] = {12'd1, 5'd0, 3'b000, 5'd1, 7'b0010011};
 
 imem[1] = {12'd2, 5'd0, 3'b000, 5'd2, 7'b0010011}; //ADDI R2,R0,0x2; 
@@ -60,9 +60,9 @@ imem[27] = {6'b000000, 6'b010, 5'd16, 3'b101, 5'd28, 7'b0010011}; //SRLI R28,R16
 
 imem[28] = {7'b0000000, 5'd2, 5'd24, 3'b010, 5'b00000, 7'b0100011}; //Store mem[(R24 + 0)/4] = R2; i.e. mem[6] = 2;
 imem[29] = {12'd16, 5'd0, 3'b010, 5'd29, 7'b0000011}; // R29 = mem[(R0 + 16)/4]; i.e. R29 = 4;
+*/
 
 
-/*
 //Branching testing
 //Program to test loop which adds 1 to 9;
 //ADDI, R14, R0, 0             // Initialize sum register R14 with 0
@@ -99,12 +99,14 @@ imem[18] = {12'd1, 5'd5, 3'b000, 5'd5, 7'b0010011}; // data hazard dummy
 imem[19] = {12'd1, 5'd6, 3'b000, 5'd6, 7'b0010011}; // data hazard dummy 
 
 imem[21] = {1'b1, 6'b111111, 5'd12, 5'd13, 3'b100, 4'b0100, 1'b1, 7'b1100011}; //branch to instruction 14 if loop executed for 10 times
+/*
 imem[22] = {12'd1, 5'd1, 3'b000, 5'd1, 7'b0010011}; // dummy for control hazard
 imem[23] = {12'd1, 5'd2, 3'b000, 5'd2, 7'b0010011}; // dummy for control hazard
 imem[24] = {12'd1, 5'd3, 3'b000, 5'd3, 7'b0010011}; // dummy for control hazard
-
-imem[25] = {12'b111111010100, 5'd14, 3'b000, 5'd30, 7'b0010011}; // subtract 44 from result expected to be 45.
-imem[26] = {1'b0, 6'b000000, 5'd0, 5'd0, 3'b101, 4'b0000, 1'b0, 7'b1100011}; // halt
+*/
+imem[22] = {12'b111111010100, 5'd14, 3'b000, 5'd30, 7'b0010011}; // subtract 44 from result expected to be 45.
+imem[23] = {1'b0, 6'b000000, 5'd0, 5'd0, 3'b101, 4'b0000, 1'b0, 7'b1100011}; // halt
+/*
 imem[27] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
 imem[28] = {12'd1, 5'd2, 3'b000, 5'd8, 7'b0010011}; //dummy
 imem[29] = {12'd1, 5'd3, 3'b000, 5'd9, 7'b0010011}; //dummy
