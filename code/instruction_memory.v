@@ -88,29 +88,31 @@ imem[9] = {12'b0, 5'd0, 3'b000, 5'd14, 7'b0010011}; // R14 = 0;
 imem[10] = {12'b1010, 5'd0, 3'b000, 5'd12, 7'b0010011}; // R12 = 10;
 imem[11] = {12'b1, 5'd0, 3'b000, 5'd13, 7'b0010011}; // R13 = 1;
 
+/*
 imem[12] = {12'd1, 5'd1, 3'b000, 5'd1, 7'b0010011}; //dummy coomand to avoid data hazard
 imem[13] = {12'd1, 5'd2, 3'b000, 5'd2, 7'b0010011}; // dummy for data hazard
 imem[14] = {12'd1, 5'd3, 3'b000, 5'd3, 7'b0010011}; // dummy for data hazard
-imem[15] = {7'b0000000, 5'd14, 5'd13, 3'b000, 5'd14, 7'b0110011}; // R14 = R14 + R13
-imem[16] = {12'b1, 5'd13, 3'b000, 5'd13, 7'b0010011}; // increment R13 
-
+*/
+imem[12] = {7'b0000000, 5'd14, 5'd13, 3'b000, 5'd14, 7'b0110011}; // R14 = R14 + R13
+imem[13] = {12'b1, 5'd13, 3'b000, 5'd13, 7'b0010011}; // increment R13 
+/*
 imem[17] = {12'd1, 5'd4, 3'b000, 5'd4, 7'b0010011}; // data hazard dummy
 imem[18] = {12'd1, 5'd5, 3'b000, 5'd5, 7'b0010011}; // data hazard dummy
 imem[19] = {12'd1, 5'd6, 3'b000, 5'd6, 7'b0010011}; // data hazard dummy 
-
-imem[21] = {1'b1, 6'b111111, 5'd12, 5'd13, 3'b100, 4'b0100, 1'b1, 7'b1100011}; //branch to instruction 14 if loop executed for 10 times
+*/
+imem[14] = {1'b1, 6'b111111, 5'd12, 5'd13, 3'b100, 4'b1010, 1'b1, 7'b1100011}; //branch to instruction 14 if loop executed for 10 times
 /*
 imem[22] = {12'd1, 5'd1, 3'b000, 5'd1, 7'b0010011}; // dummy for control hazard
 imem[23] = {12'd1, 5'd2, 3'b000, 5'd2, 7'b0010011}; // dummy for control hazard
 imem[24] = {12'd1, 5'd3, 3'b000, 5'd3, 7'b0010011}; // dummy for control hazard
 */
-imem[22] = {12'b111111010100, 5'd14, 3'b000, 5'd30, 7'b0010011}; // subtract 44 from result expected to be 45.
-imem[23] = {1'b0, 6'b000000, 5'd0, 5'd0, 3'b101, 4'b0000, 1'b0, 7'b1100011}; // halt
-/*
-imem[27] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
-imem[28] = {12'd1, 5'd2, 3'b000, 5'd8, 7'b0010011}; //dummy
-imem[29] = {12'd1, 5'd3, 3'b000, 5'd9, 7'b0010011}; //dummy
-*/
+imem[15] = {12'b111111010100, 5'd14, 3'b000, 5'd30, 7'b0010011}; // subtract 44 from result expected to be 45.
+imem[16] = {1'b0, 6'b000000, 5'd0, 5'd0, 3'b101, 4'b0000, 1'b0, 7'b1100011}; // halt
+
+imem[17] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
+imem[18] = {12'd1, 5'd2, 3'b000, 5'd8, 7'b0010011}; //dummy
+imem[19] = {12'd1, 5'd3, 3'b000, 5'd9, 7'b0010011}; //dummy
+
 
 /*
 imem[1] = {12'b111, 5'd0, 3'b000, 5'd2, 7'b0010011};
