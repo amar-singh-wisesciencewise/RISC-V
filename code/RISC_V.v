@@ -9,13 +9,14 @@ input clk, reset;
 parameter BUS_WIDTH = 32;
 parameter REG_WIDTH = 5;
 parameter INSTR_TYPE_WIDTH = 8;
-
+//For RegFile
 output [BUS_WIDTH-1 : 0] iaddr;
+input [BUS_WIDTH-1 : 0] idata;
+//For data mem
 output [BUS_WIDTH-1 : 0] addr;
 output [BUS_WIDTH-1 : 0] data_out;
-
-input [BUS_WIDTH-1 : 0] idata;
 input [BUS_WIDTH-1 : 0] data_in;
+
 output reg iwr = 1'b0;
 output reg wr /* store */, re /* load */;
 
@@ -186,6 +187,14 @@ always@(posedge clk) begin
 	end else begin
 		pc_rf <= pc_decoder; //propogate
 		instr_type_rf <= (is_taken || cpu_stall) ? `IS_ADD : instr_type_decoder;
+		//Bypass logic
+		rs1_bypE <= rde_execute & (!(is_taken || cpu_stall)) ? rd_execute==rs1_decoder : 0; 
+		rs2_bypE <= rde_execute & (!(is_taken || cpu_stall)) ? rd_execute==rs2_decoder : 0; 
+		rs1_bypL <= rde_ls & (!(is_taken || cpu_stall)) ? rd_ls==rs1_decoder : 0; 
+		rs2_bypL <= rde_ls & (!(is_taken || cpu_stall)) ? rd_ls==rs2_decoder : 0; 
+		rs1data_final <= rs1_bypE ? result_execute : (rs1_bypL? result_ls :rs1_data );	
+		rs2data_final <= rs2_bypE ? result_execute : (rs2_bypL? result_ls :rs2_data );	
+		
 		rs1_rf <= (is_taken || cpu_stall) ? 0 : rs1_decoder;
 		rs2_rf <= (is_taken || cpu_stall) ? 0 : rs2_decoder;
 		rd_rf <= (is_taken || cpu_stall) ? 0 : rd_decoder;
@@ -194,9 +203,9 @@ always@(posedge clk) begin
 		rde_rf <= (is_taken || cpu_stall) ? 1 : rde_decoder;
 		imm_rf <= (is_taken || cpu_stall) ? 0 : imm_decoder;
 
-		//use decoder values for register file read
-		rs1_data_rf <= (is_taken || cpu_stall) ? 0 : rs1_data;
-		rs2_data_rf <= (is_taken || cpu_stall) ? 0 : rs2_data;
+		//use decoder values for register file read, considering bypass logic 
+		rs1_data_rf <= (is_taken || cpu_stall) ? 0 : rs1data_final;
+		rs2_data_rf <= (is_taken || cpu_stall) ? 0 : rs2data_final;
 	end //else
 end //always end
 
