@@ -10,7 +10,11 @@ module instruction_memory(reset, addr, rdata, wr, wdata );
 input reset, wr;
 
 parameter WIDTH1 = 32;
-parameter MEM_SIZE = 1024;
+parameter MEM_SIZE = 1024; //when changed please correct in testbench file as well
+
+/* Instruction should be satrted from below this loaction.
+ As above that is reserved for ABI support in case binary file is loaded*/
+parameter INST_POSTION = 10;
 
 input [WIDTH1-1 : 0] addr;
 input [WIDTH1-1 : 0] wdata;
@@ -22,6 +26,20 @@ reg [WIDTH1-1: 0]imem [MEM_SIZE-1 : 0];
 integer i = 0;
 
 initial begin
+/* Initializing the stack pointer. Code will be auto loaded from position 1 */
+imem[0] = {12'd256, 5'd0, 3'b000, 5'd2, 7'b0010011}; //ADDI R2,R0,256;
+/* Pointing to the end of Instruction mem in X1 i.e. LR Register for ABI */
+imem[1] = {12'd1023, 5'd0, 3'b000, 5'd1, 7'b0010011}; //ADDI R1,R0,1023;
+imem[2] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
+imem[3] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
+imem[4] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
+imem[5] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
+imem[6] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
+imem[7] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
+/* Undoing ABI changes so that below manual instructions can work */
+imem[INST_POSTION - 1] = {12'd2, 5'd0, 3'b000, 5'd2, 7'b0010011}; //ADDI R2,R0,0;
+imem[INST_POSTION - 2] = {12'd0, 5'd0, 3'b000, 5'd1, 7'b0010011}; //ADDI R1,R0,1023;
+// START INSTRUCTIONS FROM POSITION INST_POSTION AS ABI RELATED ABOVE
 /*
 imem[0] = {12'd1, 5'd0, 3'b000, 5'd1, 7'b0010011};
 
@@ -74,44 +92,44 @@ imem[29] = {12'd16, 5'd0, 3'b010, 5'd29, 7'b0000011}; // R29 = mem[(R0 + 16)/4];
 //BLT, R13, R12, 1111111111000 // If R13 is less than R12, branch to label named <Loop>
 //ADDI, R30, R14, 111111010100 // Subtract expected value of 44 to set R30 to 1 if and only if the result is 45 (1 + 2 + ... + 9)
 //BGE, R0, R0, 0
-imem[0] = {12'd0, 5'd0, 3'b000, 5'd1, 7'b0010011};
-imem[1] = {12'd0, 5'd0, 3'b000, 5'd2, 7'b0010011};
-imem[2] = {12'd0, 5'd0, 3'b000, 5'd3, 7'b0010011};
-imem[3] = {12'd0, 5'd0, 3'b000, 5'd4, 7'b0010011};
-imem[4] = {12'd0, 5'd0, 3'b000, 5'd5, 7'b0010011};
-imem[5] = {12'd0, 5'd0, 3'b000, 5'd6, 7'b0010011};
-imem[6] = {12'd0, 5'd0, 3'b000, 5'd7, 7'b0010011};
-imem[7] = {12'd0, 5'd0, 3'b000, 5'd8, 7'b0010011};
-imem[8] = {12'd0, 5'd0, 3'b000, 5'd9, 7'b0010011};
+imem[0 + INST_POSTION] = {12'd0, 5'd0, 3'b000, 5'd1, 7'b0010011};
+imem[1 + INST_POSTION] = {12'd0, 5'd0, 3'b000, 5'd2, 7'b0010011};
+imem[2 + INST_POSTION] = {12'd0, 5'd0, 3'b000, 5'd3, 7'b0010011};
+imem[3 + INST_POSTION] = {12'd0, 5'd0, 3'b000, 5'd4, 7'b0010011};
+imem[4 + INST_POSTION] = {12'd0, 5'd0, 3'b000, 5'd5, 7'b0010011};
+imem[5 + INST_POSTION] = {12'd0, 5'd0, 3'b000, 5'd6, 7'b0010011};
+imem[6 + INST_POSTION] = {12'd0, 5'd0, 3'b000, 5'd7, 7'b0010011};
+imem[7 + INST_POSTION] = {12'd0, 5'd0, 3'b000, 5'd8, 7'b0010011};
+imem[8 + INST_POSTION] = {12'd0, 5'd0, 3'b000, 5'd9, 7'b0010011};
 
-imem[9] = {12'b0, 5'd0, 3'b000, 5'd14, 7'b0010011}; // R14 = 0; 
-imem[10] = {12'b1010, 5'd0, 3'b000, 5'd12, 7'b0010011}; // R12 = 10;
-imem[11] = {12'b1, 5'd0, 3'b000, 5'd13, 7'b0010011}; // R13 = 1;
+imem[9 + INST_POSTION] = {12'b0, 5'd0, 3'b000, 5'd14, 7'b0010011}; // R14 = 0; 
+imem[10 + INST_POSTION] = {12'b1010, 5'd0, 3'b000, 5'd12, 7'b0010011}; // R12 = 10;
+imem[11 + INST_POSTION] = {12'b1, 5'd0, 3'b000, 5'd13, 7'b0010011}; // R13 = 1;
 
 /*
 imem[12] = {12'd1, 5'd1, 3'b000, 5'd1, 7'b0010011}; //dummy coomand to avoid data hazard
 imem[13] = {12'd1, 5'd2, 3'b000, 5'd2, 7'b0010011}; // dummy for data hazard
 imem[14] = {12'd1, 5'd3, 3'b000, 5'd3, 7'b0010011}; // dummy for data hazard
 */
-imem[12] = {7'b0000000, 5'd14, 5'd13, 3'b000, 5'd14, 7'b0110011}; // R14 = R14 + R13
-imem[13] = {12'b1, 5'd13, 3'b000, 5'd13, 7'b0010011}; // increment R13 
+imem[12 + INST_POSTION] = {7'b0000000, 5'd14, 5'd13, 3'b000, 5'd14, 7'b0110011}; // R14 = R14 + R13
+imem[13 + INST_POSTION] = {12'b1, 5'd13, 3'b000, 5'd13, 7'b0010011}; // increment R13 
 /*
 imem[17] = {12'd1, 5'd4, 3'b000, 5'd4, 7'b0010011}; // data hazard dummy
 imem[18] = {12'd1, 5'd5, 3'b000, 5'd5, 7'b0010011}; // data hazard dummy
 imem[19] = {12'd1, 5'd6, 3'b000, 5'd6, 7'b0010011}; // data hazard dummy 
 */
-imem[14] = {1'b1, 6'b111111, 5'd12, 5'd13, 3'b100, 4'b1010, 1'b1, 7'b1100011}; //branch to instruction 14 if loop executed for 10 times
+imem[14 + INST_POSTION] = {1'b1, 6'b111111, 5'd12, 5'd13, 3'b100, 4'b1010, 1'b1, 7'b1100011}; //branch to instruction 14 if loop executed for 10 times
 /*
 imem[22] = {12'd1, 5'd1, 3'b000, 5'd1, 7'b0010011}; // dummy for control hazard
 imem[23] = {12'd1, 5'd2, 3'b000, 5'd2, 7'b0010011}; // dummy for control hazard
 imem[24] = {12'd1, 5'd3, 3'b000, 5'd3, 7'b0010011}; // dummy for control hazard
 */
-imem[15] = {12'b111111010100, 5'd14, 3'b000, 5'd30, 7'b0010011}; // subtract 44 from result expected to be 45.
-imem[16] = {1'b0, 6'b000000, 5'd0, 5'd0, 3'b101, 4'b0000, 1'b0, 7'b1100011}; // halt
+imem[15 + INST_POSTION] = {12'b111111010100, 5'd14, 3'b000, 5'd30, 7'b0010011}; // subtract 44 from result expected to be 45.
+imem[16 + INST_POSTION] = {1'b0, 6'b000000, 5'd0, 5'd0, 3'b101, 4'b0000, 1'b0, 7'b1100011}; // halt
 
-imem[17] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
-imem[18] = {12'd1, 5'd2, 3'b000, 5'd8, 7'b0010011}; //dummy
-imem[19] = {12'd1, 5'd3, 3'b000, 5'd9, 7'b0010011}; //dummy
+imem[17 + INST_POSTION] = {12'd1, 5'd1, 3'b000, 5'd7, 7'b0010011}; //dummy
+imem[18 + INST_POSTION] = {12'd1, 5'd2, 3'b000, 5'd8, 7'b0010011}; //dummy
+imem[19 + INST_POSTION] = {12'd1, 5'd3, 3'b000, 5'd9, 7'b0010011}; //dummy
 
 
 /*

@@ -24,7 +24,7 @@ integer i = 0;
 always@(posedge reset) begin
 	if (reset) begin
 		for (i =0 ; i < MEM_SIZE; i++) begin
-			dmem[i] <= i;
+			dmem[i] <= 0;
 		end// for 
 	end //if end
 end //always
